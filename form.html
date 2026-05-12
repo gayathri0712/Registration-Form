@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registration Mini Project</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    background: linear-gradient(135deg, #74ebd5, #9face6);
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+h1 {
+    text-align: center;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.submit { background: #6c63ff; color: white; }
+.reset { background: #ff4d4d; color: white; }
+
+.search {
+    width: 100%;
+    margin: 15px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #6c63ff;
+    color: white;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit { background: orange; }
+.delete { background: red; color: white; }
+
+.success {
+    text-align: center;
+    color: green;
+    display: none;
+    margin: 10px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Registration Form</h1>
+
+<form id="form">
+    <label>Full Name</label>
+    <input type="text" id="name" required>
+
+    <label>Password</label>
+    <input type="password" id="password" required>
+
+    <label>Phone Number</label>
+    <input type="tel" id="phone" required>
+
+    <label>Date of Birth</label>
+    <input type="date" id="dob" required>
+
+    <label>Gender</label>
+    <select id="gender">
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+
+    <label>Comments</label>
+    <textarea id="comments"></textarea>
+
+    <button type="submit" class="submit">Submit</button>
+    <button type="reset" class="reset">Reset</button>
+</form>
+
+<p class="success" id="msg">Saved Successfully 🎉</p>
+
+<input type="text" class="search" id="search" placeholder="Search user...">
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Gender</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="tableData"></tbody>
+</table>
+
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let editIndex = -1;
+
+const form = document.getElementById("form");
+const table = document.getElementById("tableData");
+const msg = document.getElementById("msg");
+const search = document.getElementById("search");
+
+function renderTable(data = users) {
+    table.innerHTML = "";
+
+    data.forEach((user, index) => {
+        table.innerHTML += `
+        <tr>
+            <td>${user.name}</td>
+            <td>${user.phone}</td>
+            <td>${user.dob}</td>
+            <td>${user.gender}</td>
+            <td>
+                <button class="action-btn edit" onclick="editUser(${index})">Edit</button>
+                <button class="action-btn delete" onclick="deleteUser(${index})">Delete</button>
+            </td>
+        </tr>`;
+    });
+
+    localStorage.setItem("users", JSON.stringify(users));
+}
+
+form.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const user = {
+        name: document.getElementById("name").value,
+        password: document.getElementById("password").value,
+        phone: document.getElementById("phone").value,
+        dob: document.getElementById("dob").value,
+        gender: document.getElementById("gender").value,
+        comments: document.getElementById("comments").value
+    };
+
+    if(editIndex === -1){
+        users.push(user);
+    } else {
+        users[editIndex] = user;
+        editIndex = -1;
+    }
+
+    renderTable();
+    form.reset();
+
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 1500);
+});
+
+function deleteUser(index){
+    users.splice(index, 1);
+    renderTable();
+}
+
+function editUser(index){
+    let user = users[index];
+
+    document.getElementById("name").value = user.name;
+    document.getElementById("password").value = user.password;
+    document.getElementById("phone").value = user.phone;
+    document.getElementById("dob").value = user.dob;
+    document.getElementById("gender").value = user.gender;
+    document.getElementById("comments").value = user.comments;
+
+    editIndex = index;
+}
+
+search.addEventListener("input", function(){
+    let value = search.value.toLowerCase();
+
+    let filtered = users.filter(user =>
+        user.name.toLowerCase().includes(value) ||
+        user.phone.includes(value)
+    );
+
+    renderTable(filtered);
+});
+
+renderTable();
+</script>
+
+</body>
+</html>
